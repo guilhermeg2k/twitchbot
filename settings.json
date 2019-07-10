@@ -1,0 +1,7 @@
+{
+    "host": "irc.twitch.tv",
+    "port": 6667,
+    "user":"",
+    "OAuth": "",
+    "channel":""
+}

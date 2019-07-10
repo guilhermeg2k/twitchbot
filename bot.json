@@ -1,0 +1,11 @@
+{
+    "hello": "Tô na área!! Keepo",
+    "commands": [
+        "#github",
+        "#hltv"
+    ],
+    "commandsReturn": {
+        "#github": "github.com/guilhermeg2k",
+        "#hltv": "hltv.org"
+    }
+}
