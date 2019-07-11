@@ -1,11 +1,11 @@
 {
     "hello": "Tô na área!! Keepo",
     "commands": [
-        "#github",
-        "#hltv"
-    ],
-    "commandsReturn": {
-        "#github": "github.com/guilhermeg2k",
-        "#hltv": "hltv.org"
-    }
+        {
+            "#github": {"awnser": "github.com/guilhermeg2", "delay": 2}
+        },
+        {
+            "#bot": {"awnser": "https://github.com/guilhermeg2k/twitchbot", "delay": 5}
+        }
+    ]
 }

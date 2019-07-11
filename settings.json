@@ -1,7 +1,7 @@
 {
     "host": "irc.twitch.tv",
     "port": 6667,
-    "user":"",
+    "user":"realmusicbot",
     "OAuth": "",
-    "channel":""
+    "channel":"guilhermeg2k"
 }

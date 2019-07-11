@@ -22,5 +22,5 @@ func getSettings() (settings Settings) {
 	checkError(err)
 	err = json.Unmarshal(fileData, &settings)
 	checkError(err)
-	return settings
+	return
 }

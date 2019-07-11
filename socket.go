@@ -1,10 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"net"
+	"os"
 	"strings"
-	"sync"
 )
 
 //Twitch connection
@@ -15,30 +16,29 @@ type Twitch struct {
 	CommandsChannel chan Command
 }
 
-//Command user Command
-type Command struct {
-	Command string
-	Nick    string
-	Msg     string
-}
+var cliChannel chan string
 
 //SocketClient inicialize
 func SocketClient(s Settings) {
-	var wg sync.WaitGroup
+	var userInput string
 	bot := InicializeBot()
 	addr := fmt.Sprintf("%s:%d", s.Host, s.Port)
 	conn, err := net.Dial("tcp", addr)
 	twitch := Twitch{Conn: conn, S: s, bot: bot, CommandsChannel: make(chan Command)}
 	checkError(err)
-	wg.Add(1)
-	go twitch.handle(&wg)
+	go twitch.handle()
 	twitch.authenticate()
 	twitch.joinChannel()
-	twitch.sendMenssage(bot.Hello)
-	wg.Wait()
+	//twitch.sendMenssage(bot.Hello)
+	stdIn := bufio.NewReader(os.Stdin)
+	for {
+		userInput, err = stdIn.ReadString('\n')
+		checkError(err)
+		handdleCliCommand(userInput, &twitch)
+	}
 }
 
-func (twitch *Twitch) handle(wg *sync.WaitGroup) {
+func (twitch *Twitch) handle() {
 	go twitch.handleCommand()
 	var err error
 	var buff []byte
@@ -48,28 +48,29 @@ func (twitch *Twitch) handle(wg *sync.WaitGroup) {
 		buff = make([]byte, 1024)
 		n, err = twitch.Conn.Read(buff)
 		if err != nil {
-			wg.Done()
 			checkError(err)
 		}
 		data = string(buff[0:n])
 		fmt.Println(data)
 		if strings.Contains(data, "PRIVMSG") {
+			msg := getCommandFromData(data)
 			for _, command := range twitch.bot.Commands {
-				msg := getCommandFromData(data)
-				fmt.Println(command, msg.Msg)
-				if msg.Msg == command {
-					msg.Command = command
+				if _, ok := command[msg.Msg]; ok {
+					fmt.Println(msg.Msg)
 					twitch.CommandsChannel <- msg
 					break
 				}
 			}
-		}
-		if strings.Contains(data, "PING") {
-			twitch.sendMenssage("PONG :tmi.twitch.tv\r\n")
+			if strings.Contains(data, "PING") {
+				twitch.pong()
+			}
 		}
 	}
 }
 
+func (twitch *Twitch) pong() {
+	twitch.Conn.Write([]byte("PONG :tmi.twitch.tv\r\n"))
+}
 func (twitch *Twitch) authenticate() {
 	twitch.Conn.Write([]byte(fmt.Sprintf("PASS %s\r\n", twitch.S.OAuth)))
 	twitch.Conn.Write([]byte(fmt.Sprintf("NICK %s\r\n", twitch.S.User)))
