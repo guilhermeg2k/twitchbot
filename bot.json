@@ -1,11 +1,57 @@
 {
-    "hello": "Tô na área!! Keepo",
-    "commands": [
-        {
-            "#github": {"awnser": "github.com/guilhermeg2", "delay": 2}
-        },
-        {
-            "#bot": {"awnser": "https://github.com/guilhermeg2k/twitchbot", "delay": 5}
-        }
-    ]
+  "hello": "Tô na área!! Keepo",
+  "commands": [
+    {
+      "$cmds": {
+        "anwser": "List of commands: $cmds, $github, $bot, $gotour, $os, $playlist",
+        "delay": 5
+      }
+    },
+    {
+      "$github": {
+        "anwser": "github.com/guilhermeg2k",
+        "delay": 5
+      }
+    },
+    {
+      "$bot": {
+        "anwser": "github.com/guilhermeg2k/twitchbot",
+        "delay": 5
+      }
+    },
+    {
+      "$go": {
+        "anwser": "Go is an open source programming language that makes it easy to build simple, reliable, and efficient software. golang.org",
+        "delay": 5
+      }
+    },
+    {
+      "$gotour": {
+        "anwser": "tour.golang.org",
+        "delay": 5
+      }
+    },
+    {
+      "$os": {
+        "anwser": "I'm currently running a Fedora 30 linux distribution with a MATE Desktop Environment! getfedora.org",
+        "delay": 5
+      }
+    },
+    {
+      "$playlist": {
+        "anwser": "My Spotify playlist: http://tiny.cc/g2ksptplst",
+        "delay": 5
+      }
+    }
+  ],
+  "blockedWords": ["fuck","shit","fdp"],
+  "blockedMsg": "be careful with the words!",
+  "timedMsgs":[
+    {
+      "bot_commands": {
+        "msg": "Digite $cmds para ver os comandos disponiveis no bot!",
+        "delay": 120
+      }
+    }
+  ]
 }
