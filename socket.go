@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -26,6 +27,7 @@ func SocketClient(s Settings) {
 	twitch := Twitch{Conn: conn, S: s, bot: bot, CommandsChannel: make(chan Command), WordFilterChannel: make(chan Command)}
 	checkError(err)
 	go twitch.handle()
+	twitch.getCommands()
 	twitch.authenticate()
 	twitch.joinChannel()
 	//twitch.sendMessage(bot.Hello)
@@ -45,33 +47,43 @@ func (twitch *Twitch) handle() {
 	var buff []byte
 	var n int
 	var data string
-	var keepRunning bool
 	var msg Command
+LOOP:
 	for {
 		buff = make([]byte, 1024)
 		n, err = twitch.Conn.Read(buff)
 		if err != nil {
 			checkError(err)
 		}
-		keepRunning = true
 		data = string(buff[0:n])
 		fmt.Println(data)
 		if strings.Contains(data, "PRIVMSG") {
 			msg = getCommandFromData(data)
+			rg := regexp.MustCompile("([a-zA-Z0-9]{3,})[.]([a-zA-Z0-9]{3,})")
+			if twitch.bot.LinkFilter {
+				for _, word := range msg.FullMsg {
+					if rg.MatchString(word) {
+						fmt.Println(word)
+						twitch.removeLink(msg)
+						continue LOOP
+					}
+				}
+			}
+			if msg.Msg == twitch.bot.CommandsCmd {
+				twitch.commands(msg)
+				continue LOOP
+			}
+
 			for _, blockedWord := range twitch.bot.BlockedWords {
 				if strings.Contains(data, blockedWord) {
 					twitch.WordFilterChannel <- msg
-					keepRunning = false
-					break
+					continue LOOP
 				}
 			}
-			if keepRunning {
-				for _, command := range twitch.bot.Commands {
-					if _, ok := command[msg.Msg]; ok {
-						twitch.CommandsChannel <- msg
-						keepRunning = false
-						break
-					}
+			for _, command := range twitch.bot.Commands {
+				if _, ok := command[msg.Msg]; ok {
+					twitch.CommandsChannel <- msg
+					continue LOOP
 				}
 			}
 		}
@@ -106,5 +118,7 @@ func getCommandFromData(data string) Command {
 	aux = strings.Split(dataSplited[3], ":")
 	aux = strings.Split(aux[1], "\r")
 	msg.Msg = aux[0]
+	dataSplited = strings.SplitN(data, ":", 3)
+	msg.FullMsg = strings.Split(strings.Split(dataSplited[2], "\r")[0], " ")
 	return msg
 }

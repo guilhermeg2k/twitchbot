@@ -15,6 +15,9 @@ type Bot struct {
 	Commands     []map[string]*Command
 	TimedMsgs    []map[string]*TimedMsg
 	BlockedWords []string
+	LinkMsg      string
+	LinkFilter   bool
+	CommandsCmd  string
 }
 
 //TimedMsg .
@@ -30,9 +33,30 @@ type Command struct {
 	Delay   int
 	Nick    string
 	Msg     string
+	FullMsg []string
 	LasTime time.Time
 }
 
+func (twitch *Twitch) commands(cmd Command) {
+	res := fmt.Sprintf("@%s My currently commands are:", cmd.Nick)
+	for _, cmd := range twitch.getCommands() {
+		res += " " + cmd
+	}
+	twitch.sendMessage(res)
+}
+func (twitch *Twitch) getCommands() []string {
+	commands := []string{}
+	for _, command := range twitch.bot.Commands {
+		for key := range command {
+			commands = append(commands, key)
+		}
+	}
+	return commands
+}
+func (twitch *Twitch) removeLink(msg Command) {
+	twitch.timeOut(msg.Nick, 1)
+	twitch.sendMessage(fmt.Sprintf("@%s %s", msg.Nick, twitch.bot.LinkMsg))
+}
 func (twitch *Twitch) timedMessages() {
 	for {
 		for _, msg := range twitch.bot.TimedMsgs {
